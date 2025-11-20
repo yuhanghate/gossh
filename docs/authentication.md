@@ -1,75 +1,79 @@
-# Authentication
+# 认证方式
 
-`Gossh` supports three SSH authentication methods: `SSH-Agent`, `Pubkey`, `Password`.
+`Gossh` 支持三种 SSH 认证方式：`SSH-Agent`、`公钥认证(Pubkey)` 和 `密码认证(Password)`。
 
-It will auto detect above three authentication methods for the login user. The default login user is `$USER`, if it is not specified.
+它会自动检测上述三种认证方式以登录用户。如果未指定，默认的登录用户是当前系统的 `$USER` 变量。
 
-`Password` can be from variable `password` that in inventory file, or from flag `-k/--auth.ask-pass`,`-p/--auth.password`,`-a/--auth.pass-file`, or from relative items in configuration file.
+`密码(Password)` 可以来自多种来源：
+1.  清单文件 (inventory file) 中为特定主机设置的 `password` 变量。
+2.  命令行标志：`-k`/`--auth.ask-pass` (交互式输入密码)、`-p`/`--auth.password` (直接提供密码)、`-a`/`--auth.pass-file` (从文件读取密码)。
+3.  配置文件中 `auth` 部分的相关设置。
 
-`Pubkey Authentication` is enabled by default through identity files(default `~/.ssh/id_rsa` if not specified). The identity files with passphrase are also supported, you can use flag `-K, --auth.passphrase` to specify it.
+`公钥认证(Pubkey Authentication)` 默认启用，它会使用身份认证文件（如果未指定，默认为 `~/.ssh/id_rsa`）。`Gossh` 也支持带密码的私钥文件，您可以使用 `-K, --auth.passphrase` 标志来指定私钥的密码。
 
-If the system environment variable `$SSH_AUTH_SOCK` exists, `SSH-Agent Authentication` will be auto enabled.
+如果系统环境变量 `$SSH_AUTH_SOCK` 存在，`SSH-Agent 认证` 将被自动启用。
 
-If the three authentication methods are valid at the same time, the priority order is: `SSH-Agent` > `Pubkey` > `Password`.
+如果这三种认证方式同时有效，它们的优先级顺序是：`SSH-Agent` > `公钥认证` > `密码认证`。
 
-## Examples
+## 示例
 
-### Use Password Authentication
+### 使用密码认证
 
 ```sh
-# Ask for password.
+# 交互式输入密码
 $ gossh command target_host -e "uptime" -k
 
-# Give plain password by flag '-p'.
-$ gossh command target_host -e "uptime" -p "the-plain-password"
+# 通过 '-p' 标志直接提供明文密码
+$ gossh command target_host -e "uptime" -p "your-plain-password"
 
-# Give cipher password encrypted by `gossh vault encrypt`.
-$ gossh command target_host -e "uptime" -p "the-cipher-password" -V /path/vault-pass-file
+# 提供由 `gossh vault encrypt` 加密后的密码
+$ gossh command target_host -e "uptime" -p "your-cipher-password" -V /path/to/vault-pass-file
 
-# Give password by a password-file.
-$ gossh command target_host -e "uptime" -a /path/password-file
+# 通过密码文件提供密码
+$ gossh command target_host -e "uptime" -a /path/to/password-file
 
-# The password was setted in the configuration file(auth.password/auth.file).
+# 在配置文件中设置了密码 (auth.password/auth.file)
 $ gossh command target_host -e "uptime"
 ```
 
-### Use Pubkey Authentication with no passphrase
+### 使用无密码的公钥认证
 
 ```sh
-# Generate identity files with no passphrase.
-$ ssh-keygen -t rsa -f /path/id_rsa -N ""
+# 生成一个没有密码的密钥对
+$ ssh-keygen -t rsa -f /path/to/id_rsa -N ""
 
-# Copy pubkey to target host.
-$ ssh-copy-id -i /path/id_rsa target_host
+# 将公钥复制到目标主机
+$ ssh-copy-id -i /path/to/id_rsa target_host
 
-# If /path/id_rsa is '~/.ssh/id_rsa', the flag '-I /path/id_rsa' can be omitted.
-$ gossh command target_host -e "uptime" -I /path/id_rsa
+# 如果您的私钥路径是默认的 '~/.ssh/id_rsa', 则可以省略 '-I /path/to/id_rsa' 标志
+$ gossh command target_host -e "uptime" -I /path/to/id_rsa
 ```
 
-### Use Pubkey Authentication with passphrase
+### 使用带密码的公钥认证
 
 ```sh
-# Generate identity files with passphrase.
-$ ssh-keygen -t rsa -f /path/id_rsa -N "the-passphrase"
+# 生成一个带密码的密钥对
+$ ssh-keygen -t rsa -f /path/to/id_rsa -N "your-passphrase"
 
-# Copy pubkey to target host.
-$ ssh-copy-id -i /path/id_rsa target_host
+# 将公钥复制到目标主机
+$ ssh-copy-id -i /path/to/id_rsa target_host
 
-# If /path/id_rsa is '~/.ssh/id_rsa', the flag '-I /path/id_rsa' can be omitted.
-# NOTE: "the-passphrase" can be encrypted by command `gossh vault encrypt`,
-# then you must add another flag `-V /paht/vault-pass-file`.
-$ gossh command target_host -e "uptime" -I /path/id_rsa -K "the-passphrase"
+# 如果您的私钥路径是默认的 '~/.ssh/id_rsa', 则可以省略 '-I /path/to/id_rsa' 标志
+# 注意: "your-passphrase" 可以通过 `gossh vault encrypt` 命令加密，
+# 加密后，您必须额外添加 `-V /path/to/vault-pass-file` 标志。
+$ gossh command target_host -e "uptime" -I /path/to/id_rsa -K "your-passphrase"
 ```
 
-### Use SSH-Agent Authentication
+### 使用 SSH-Agent 认证
 
-The following steps based on the above steps.
+以下步骤基于您已完成公钥认证的设置。
 
 ```sh
+# 启动 ssh-agent
 $ ssh-agent
 ```
 
-Output:
+输出:
 
 ```text
 SSH_AUTH_SOCK=/var/folders/42/nh6v60h917x69c1mtczc_g300000gn/T//ssh-9VvFRZMFXiJc/agent.53250; export SSH_AUTH_SOCK;
@@ -78,31 +82,31 @@ echo Agent pid 53251;
 ```
 
 ```sh
-# export variables
+# 导出环境变量
 $ SSH_AUTH_SOCK=/var/folders/42/nh6v60h917x69c1mtczc_g300000gn/T//ssh-9VvFRZMFXiJc/agent.53250; export SSH_AUTH_SOCK;
 $ SSH_AGENT_PID=53251; export SSH_AGENT_PID;
 
-# Lists fingerprints of all identities currently represented by the agent.
+# 列出 agent 当前管理的所有身份的指纹
 $ ssh-add -l
 
-# Add identity file to ssh-agent.
+# 将您的私钥添加到 ssh-agent
 $ ssh-add ~/.ssh/id_rsa
 
-# Lists fingerprints of all identities currently represented by the agent.
+# 再次列出 agent 管理的身份，确认已添加成功
 $ ssh-add -l
 ```
 
 ```sh
-# Test
+# 测试连接
 $ gossh command target_host -e "uptime" -v
 ```
 
-### Check which auth method was used to connect the target host
+### 检查连接到目标主机时使用了哪种认证方式
 
 ```sh
-# login target host
+# 首先，登录到您的目标主机
 $ ssh target_host
 
-# on the target host
+# 在目标主机上，实时查看安全日志
 $ tail -f /var/log/secure
 ```

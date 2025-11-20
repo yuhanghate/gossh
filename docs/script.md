@@ -1,5 +1,5 @@
-# Script
+# script (执行脚本)
 
-Execute a local shell script on target hosts.
+在目标主机上执行一个本地的 Shell 脚本。
 
-## Examples
+## 示例

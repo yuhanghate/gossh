@@ -1,5 +1,5 @@
-# Push
+# push (推送文件)
 
-Copy local files and directories to the target hosts.
+将本地文件和目录复制到目标主机。
 
-## Examples
+## 示例

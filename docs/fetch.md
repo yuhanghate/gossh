@@ -1,5 +1,5 @@
-# Fetch
+# fetch (拉取文件)
 
-Copy files and directories from the target hosts to local.
+将目标主机上的文件和目录复制到本地。
 
-## Examples
+## 示例

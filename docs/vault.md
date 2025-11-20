@@ -1,137 +1,136 @@
-# Vault
+# vault (加密工具)
 
-Encrypt sensitive content such as passwords so you can protect it rather than
-leaving it visible as plaintext in public place.
+`vault` 用于加密敏感内容（如密码），这样您就可以保护它，而不是让它以明文形式出现在公共场合。
 
-To use `vault` you need another password(vault-pass) to encrypt and decrypt the content.
+要使用 `vault`，您需要另一个密码（称为 vault-pass）来加密和解密内容。
 
-The vault password can be provided by flag `-V, --auth.vault-pass-file`, or from command line prompt.
+vault 密码可以通过 `-V, --auth.vault-pass-file` 标志提供，或者从命令行提示符输入。
 
-The value of flag `-V` can be a text file containing plaintext vault password, or a executable file fetching the vault password from restapi or databases or some other security places.
+`-V` 标志的值可以是一个包含明文 vault 密码的文本文件，或者是一个可执行文件，该文件可以从 REST API、数据库或其他安全的地方获取 vault 密码。
 
-If you don't want to type the flag `-V` every time you run the `gossh vault` command, you can write this flag value to the configuration file.
+如果您不想每次运行 `gossh vault` 命令时都输入 `-V` 标志，您可以将此标志的值写入配置文件。
 
-## Encrypt
+## encrypt (加密)
 
-Encrypt sensitive content(string).
+加密敏感内容（字符串）。
 
-### Examples
+### 示例
 
-#### demo1
+#### 示例 1
 
 ```sh
 $ gossh vault encrypt
 ```
 
-Output:
+输出:
 
 ```text
-New Vault password:
-Confirm new vault password:
-Plaintext:
-Confirm plaintext:
+New Vault password: (输入新的 vault 密码)
+Confirm new vault password: (确认新的 vault 密码)
+Plaintext: (输入要加密的明文)
+Confirm plaintext: (确认要加密的明文)
 
 GOSSH-AES256:a40ab7109050cd20d06fc8e39412d5e605e7a1a1ecc84ff686fb82b88518dde0
 ```
 
-`Plaintext` above is the sensitive string to encrypt.
+上面输出的 `Plaintext` 是要加密的敏感字符串。
 
-#### demo2
+#### 示例 2
 
 ```sh
 $ gossh vault encrypt -V ./vault-pass-file
 ```
 
-Output:
+输出:
 
 ```text
-Plaintext:
-Confirm plaintext:
+Plaintext: (输入要加密的明文)
+Confirm plaintext: (确认要加密的明文)
 
 GOSSH-AES256:349a1220bc8adbb6b784624e8f4e913b24cf0836c45b73e9ab16c66cec7c3adf
 ```
 
-#### demo3
+#### 示例 3
 
 ```sh
 $ gossh vault encrypt "the-password" -V ./vault-pass-file
 ```
 
-Output:
+输出:
 
 ```text
 GOSSH-AES256:1ef8a41af6f38046c7eabe5a5221274f084c0f3bf0fdb99c793b7c069139378e
 ```
 
-## Decrypt
+## decrypt (解密)
 
-Decrypt content(string) encrypted by `vault`.
+解密由 `vault` 加密的内容（字符串）。
 
-### Examples
+### 示例
 
 ```sh
 $ gossh vault decrypt -V ./vault-pass-file GOSSH-AES256:1ef8a41af6f38046c7eabe5a5221274f084c0f3bf0fdb99c793b7c069139378e
 ```
 
-Output:
+输出:
 
 ```text
 the-password
 ```
 
-## Encrypt-file
+## encrypt-file (加密文件)
 
-Encrypt a file.
+加密一个文件。
 
-### Examples
+### 示例
 
 ```sh
 $ gossh vault encrypt-file -V ./vault-pass-file foo.txt
 ```
 
-Output:
+输出:
 
 ```text
-Encryption successful
+Encryption successful (加密成功)
 ```
 
 ```sh
 cat foo.txt
 ```
 
-Output:
+输出:
 
 ```text
 GOSSH-AES256:631c5a5ced3aecc2c34532cdb08339a130b3fe59ccc1154c526c30f452bb92e211277fdad30226d6897f5557700bd00d776f858562e3eff2fa40605fba5f9aa36cc9b33e842e941e1995761a38c8278b
 ```
 
-## Decrypt-file
+## decrypt-file (解密文件)
 
-Decrypt `vault` encrypted file.
+解密由 `vault` 加密的文件。
 
-### Examples
+### 示例
 
 ```sh
 $ gossh vault decrypt-file foo.txt -V ./vault-pass-file
 ```
 
-Output:
+输出:
 
 ```text
-Decryption successful
+Decryption successful (解密成功)
 ```
 
-## View
+## view (查看)
 
-View `vault` encrypted file.
+查看由 `vault` 加密的文件内容。
 
-### Examples
+### 示例
 
 ```sh
 $ gossh vault view foo.txt -V ./vault-pass-file
 ```
 
-Output:
+输出:
 
 ```text
 the sensitive content
